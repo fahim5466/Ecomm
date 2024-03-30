@@ -26,6 +26,7 @@ class UsersRepository{
         const users = await this.getAll();
         users.push(user);
         await this.writeAll(users);
+        return user;
     }
 
     async writeAll(users){
