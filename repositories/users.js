@@ -1,5 +1,7 @@
 const fs = require('fs');
 const crypto = require('crypto');
+const util = require('util');
+const scrypt = util.promisify(crypto.scrypt);
 
 class UsersRepository{
     constructor(filename){
@@ -23,9 +25,16 @@ class UsersRepository{
 
     async create(user){
         user.id = this.randomId();
+        
+        const salt = crypto.randomBytes(8).toString('hex');
+        const hash = (await scrypt(user.password, salt, 64)).toString('hex');
+        user.password = `${hash}.${salt}`;
+
         const users = await this.getAll();
         users.push(user);
+
         await this.writeAll(users);
+
         return user;
     }
 
@@ -77,6 +86,12 @@ class UsersRepository{
                 return user;
             }
         }
+    }
+
+    async comparePasswords(passwordFromDb, passwordFromUser){
+        const [hashFromDb, salt] = passwordFromDb.split('.');
+        const hashFromUser = (await scrypt(passwordFromUser, salt, 64)).toString('hex');
+        return hashFromDb === hashFromUser
     }
 }
 

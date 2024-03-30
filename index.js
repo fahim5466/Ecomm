@@ -50,6 +50,7 @@ app.get('/signout', (req, res) => {
 app.get('/signin', (req, res) => {
   res.send(`
     <div>
+    Your id is ${req.session.userId}
       <form method="POST">
         <input name="email" placeholder="email" />
         <input name="password" placeholder="password" />
@@ -68,7 +69,8 @@ app.post('/signin', async (req, res) => {
     return res.send('User not found.');
   }
 
-  if(user.password !== password){
+  const isValidPassword = await userRepo.comparePasswords(user.password, password);
+  if(!isValidPassword){
     return res.send('Invalid password.');
   }
 
