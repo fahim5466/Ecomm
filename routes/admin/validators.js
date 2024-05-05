@@ -51,5 +51,11 @@ module.exports = {
         }
         
         return true;
-    })
+    }),
+    checkProductTitle:
+    check('title').trim()
+    .isLength({min: 5, max: 40}).withMessage('Must be between 4 and 20 characters!'),
+    checkProductPrice:
+    check('price').trim()
+    .toFloat().isFloat({min: 1}).withMessage('Must be a number greather than or equal to 1')
 };
