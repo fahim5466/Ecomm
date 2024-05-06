@@ -21,7 +21,7 @@ router.post('/signup',
     const newUser = await userRepo.create({email, password});
     req.session.userId = newUser.id;
 
-    res.send("Account created!");
+    res.redirect('/admin/products');
 });
 
 router.get('/signout', (req, res) => {
@@ -41,7 +41,7 @@ router.post('/signin',
 
     const user = await userRepo.getOneBy({email});
     req.session.userId = user.id;
-    return res.send('You are signed in.');
+    res.redirect('/admin/products');
   });
 
 module.exports = router;
