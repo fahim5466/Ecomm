@@ -4,6 +4,7 @@ const multer = require('multer');
 const productsRepo = require('../../repositories/products');
 const createProductTemplate = require('../../views/admin/products/new');
 const productIndexTemplate = require('../../views/admin/products/index');
+const editProductTemplate = require('../../views/admin/products/edit');
 const { checkProductTitle, checkProductPrice } = require('./validators');
 const { handleValidationErrors, authenticateUser } = require('./middlewares');
 
@@ -35,6 +36,52 @@ router.post('/admin/products/new',
         await productsRepo.create({ title, price, image });
 
         res.redirect('/admin/products');
-})
+});
+
+router.get('/admin/products/:id/edit',
+    authenticateUser,
+    async (req, res) => {
+        const product = await productsRepo.getOne(req.params.id);
+
+        if(!product){
+            return res.send("Product not found!");
+        }
+
+        res.send(editProductTemplate({ product }));
+    }
+);
+
+router.post('/admin/products/:id/edit',
+    authenticateUser,
+    upload.single('image'),
+    [checkProductTitle, checkProductPrice],
+    handleValidationErrors(editProductTemplate, async req => {
+        const product = await productsRepo.getOne(req.params.id);
+        return {product};
+    }),
+    async (req, res) => {
+        const attrs = req.body;
+
+        if(req.file){
+            attrs.image = req.file.buffer.toString('base64');
+        }
+
+        try{
+            await productsRepo.update(req.params.id, attrs);
+        } catch(err){
+            return res.send("Could not find product!");
+        }
+
+        res.redirect('/admin/products');
+    }
+);
+
+router.post('/admin/products/:id/delete',
+    authenticateUser,
+    async (req, res) => {
+        await productsRepo.delete(req.params.id);
+        res.redirect('/admin/products');
+    }
+);
 
 module.exports = router;
