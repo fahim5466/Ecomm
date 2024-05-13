@@ -26,7 +26,7 @@ router.post('/cart/products',
 
         await cartsRepo.update(cart.id, {items: cart.items});
 
-        res.send("Product added to cart!");
+        res.redirect('/cart');
     }
 );
 
@@ -43,6 +43,20 @@ router.get('/cart',
         }
 
         res.send(showCartTemplate({items: cart.items}));
+    }
+);
+
+router.post('/cart/products/delete',
+    async (req, res) => {
+        const { cartItemId } = req.body;
+        const { cartId } = req.session;
+
+        const cart = await cartsRepo.getOne(cartId);
+        const items = cart.items.filter(item => item.id !== cartItemId);
+
+        await cartsRepo.update(cartId, { items });
+
+        res.redirect('/cart');
     }
 );
 
